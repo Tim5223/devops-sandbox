@@ -1,0 +1,9 @@
+# Never commit secrets
+.env
+
+# Docker volumes (if mounted locally)
+postgres_data/
+pgadmin_data/
+
+# OS junk
+.DS_Store
