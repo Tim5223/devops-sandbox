@@ -1,15 +1,12 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.database import get_db
+from fastapi import APIRouter
+from app.api.routers.assets import router as assets_router
+from app.api.routers.employees import router as employees_router
+from app.api.routers.other import departments_router, assignments_router, maintenance_router
 
 router = APIRouter()
 
-
-@router.get("/ping-db")
-async def ping_db(db: AsyncSession = Depends(get_db)) -> dict[str, str]:
-    """Verify the API can reach PostgreSQL."""
-    result = await db.execute(text("SELECT NOW()"))
-    ts = result.scalar()
-    return {"db_time": str(ts)}
+router.include_router(assets_router)
+router.include_router(employees_router)
+router.include_router(departments_router)
+router.include_router(assignments_router)
+router.include_router(maintenance_router)
