@@ -12,7 +12,7 @@ dependencies = [
     # API
     "fastapi>=0.111",
     "uvicorn[standard]>=0.30",
-    "pydantic>=2.7",
+    "pydantic[email]>=2.7",
     "pydantic-settings>=2.3",      # Settings from .env
     # Pipelines / data
     "pandas>=2.2",
