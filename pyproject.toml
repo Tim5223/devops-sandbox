@@ -46,6 +46,9 @@ select = ["E", "F", "I", "UP"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
+[tool.setuptools.packages.find]
+include = ["app*"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
