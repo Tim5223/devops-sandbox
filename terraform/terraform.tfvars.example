@@ -1,0 +1,10 @@
+# Copy this to terraform.tfvars and fill in your values
+# Never commit terraform.tfvars to Git
+
+tenancy_ocid     = "ocid1.tenancy.oc1..your_tenancy_ocid"
+user_ocid        = "ocid1.user.oc1..your_user_ocid"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "C:\\Users\\YourName\\.oci\\oci_api_key.pem"
+region           = "ap-osaka-1"
+compartment_ocid = "ocid1.tenancy.oc1..your_compartment_ocid"
+ssh_public_key   = "ssh-rsa AAAA... your_public_key"
