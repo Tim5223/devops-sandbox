@@ -68,7 +68,7 @@ jobs:
             ghcr.io/tim5223/devops-sandbox-api:latest
             ghcr.io/tim5223/devops-sandbox-api:${{ github.sha }}
 
-  deploy:
+  deploy-production:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -82,9 +82,37 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to VM
+      - name: Deploy to production VM
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'ENDSSH'
+            cd ~/devops-sandbox
+            sudo rm -rf app/__pycache__ app/**/__pycache__
+            git fetch origin
+            git reset --hard origin/main
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u tim5223 --password-stdin
+            docker pull ghcr.io/tim5223/devops-sandbox-api:latest
+            docker compose down
+            docker compose up -d
+            docker compose ps
+          ENDSSH
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.STAGING_VM_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging VM
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VM_USER }}@${{ secrets.STAGING_VM_HOST }} << 'ENDSSH'
             cd ~/devops-sandbox
             sudo rm -rf app/__pycache__ app/**/__pycache__
             git fetch origin
