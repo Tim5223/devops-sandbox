@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/tim5223/devops-sandbox-api
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -32,9 +36,32 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v --tb=short
 
-  deploy:
+  build:
     runs-on: ubuntu-latest
     needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/tim5223/devops-sandbox-api:latest
+            ghcr.io/tim5223/devops-sandbox-api:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,10 +77,23 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'ENDSSH'
             cd ~/devops-sandbox
+
+            # Clean pycache
             sudo rm -rf app/__pycache__ app/**/__pycache__
+
+            # Pull latest code
             git fetch origin
             git reset --hard origin/main
+
+            # Log in to GitHub Container Registry
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u tim5223 --password-stdin
+
+            # Pull the latest image
+            docker pull ghcr.io/tim5223/devops-sandbox-api:latest
+
+            # Restart containers with new image
             docker compose down
-            docker compose up -d --build
+            docker compose up -d
+
             docker compose ps
           ENDSSH
